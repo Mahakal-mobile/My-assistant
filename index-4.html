@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="Guru - आपका ऑल-इन-वन सहायक | AI Chat, Memory, Auto-Reply & Security Shield" />
+  <title>Guru – आपका ऑल-इन-वन सहायक</title>
+
+  <!-- Simple PWA Manifest (inline) -->
+  <link rel="manifest" href="data:application/manifest+json,{
+    &quot;name&quot;: &quot;Guru - All-in-One Assistant&quot;,
+    &quot;short_name&quot;: &quot;Guru&quot;,
+    &quot;start_url&quot;: &quot;/&quot;,
+    &quot;display&quot;: &quot;standalone&quot;,
+    &quot;background_color&quot;: &quot;#0f172a&quot;,
+    &quot;theme_color&quot;: &quot;#0f172a&quot;,
+    &quot;orientation&quot;: &quot;portrait&quot;,
+    &quot;icons&quot;: [
+      {
+        &quot;src&quot;: &quot;data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2338bdf8'/><text y='70' x='50' text-anchor='middle' font-size='55' fill='%230f172a'>✦</text></svg>&quot;,
+        &quot;sizes&quot;: &quot;any&quot;,
+        &quot;type&quot;: &quot;image/svg+xml&quot;,
+        &quot;purpose&quot;: &quot;any maskable&quot;
+      }
+    ]
+  }" />
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #334155;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-dark: #0ea5e9;
+      --danger: #f87171;
+      --success: #4ade80;
+      --border: #334155;
+      --radius: 16px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* Header */
+    header {
+      background: var(--surface);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      z-index: 50;
+    }
+
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo span {
+      color: var(--primary);
+    }
+
+    .lang-toggle {
+      display: flex;
+      background: var(--surface2);
+      border-radius: 999px;
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .lang-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .lang-btn.active {
+      background: var(--primary);
+      color: #0f172a;
+    }
+
+    /* Main */
+    main {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .tab-panel {
+      display: none;
+      height: 100%;
+      flex-direction: column;
+      padding: 16px;
+      padding-bottom: calc(90px + var(--safe-bottom));
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tab-panel.active {
+      display: flex;
+    }
+
+    /* Chat */
+    #chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-bottom: 12px;
+      min-height: 0;
+    }
+
+    .msg {
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      line-height: 1.45;
+      font-size: 0.95rem;
+      animation: fadeIn 0.25s ease;
+      word-wrap: break-word;
+    }
+
+    .msg.user {
+      align-self: flex-end;
+      background: var(--primary);
+      color: #0f172a;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg.bot {
+      align-self: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-input-area {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: var(--surface);
+      border-radius: 24px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .chat-input-area input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: var(--surface2);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .icon-btn.primary {
+      background: var(--primary);
+      color: #0f172a;
+    }
+
+    .icon-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* Memory */
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .muted {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .memory-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .memory-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .memory-item p {
+      flex: 1;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    .btn-sm {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 0.8rem;
+      cursor: pointer;
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .btn-sm.danger {
+      background: #7f1d1d;
+      color: #fecaca;
+    }
+
+    .add-memory {
+      margin-top: 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .add-memory input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    /* Reply */
+    .tone-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0 16px;
+    }
+
+    .tone-btn {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tone-btn.active {
+      background: var(--primary);
+      color: #0f172a;
+      border-color: var(--primary);
+    }
+
+    #reply-context {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      color: var(--text);
+      margin-bottom: 12px;
+      resize: none;
+      font-size: 0.95rem;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .reply-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      min-height: 80px;
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .reply-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Shield */
+    .url-input-area {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0 16px;
+    }
+
+    .url-input-area input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .scan-result {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 16px;
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .scan-result.safe {
+      border-color: var(--success);
+    }
+
+    .scan-result.risky {
+      border-color: var(--danger);
+    }
+
+    .privacy-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 18px;
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .switch {
+      position: relative;
+      width: 52px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--surface2);
+      border-radius: 28px;
+      transition: 0.3s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+
+    input:checked + .slider {
+      background: var(--primary);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--primary);
+      color: #0f172a;
+      font-size: 0.95rem;
+    }
+
+    .btn.secondary {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    /* Bottom Nav */
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0 calc(8px + var(--safe-bottom));
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 12px;
+      transition: color 0.2s;
+      min-width: 64px;
+    }
+
+    .nav-item.active {
+      color: var(--primary);
+    }
+
+    .nav-item span.icon {
+      font-size: 1.35rem;
+    }
+
+    /* Floating Bubble */
+    #float-bubble {
+      position: fixed;
+      bottom: 100px;
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 20px rgba(56, 189, 248, 0.45);
+      cursor: grab;
+      z-index: 90;
+      user-select: none;
+      touch-action: none;
+    }
+
+    #float-bubble:active {
+      cursor: grabbing;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    /* Desktop nice look */
+    @media (min-width: 500px) {
+      body {
+        border-left: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">Guru <span>✦</span></div>
+    <div class="lang-toggle">
+      <button class="lang-btn active" data-lang="en">EN</button>
+      <button class="lang-btn" data-lang="hi">हिंदी</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ========== CHAT ========== -->
+    <div id="tab-chat" class="tab-panel active">
+      <div id="chat-messages"></div>
+      <div class="chat-input-area">
+        <button class="icon-btn" id="voice-btn" title="Voice Input">🎤</button>
+        <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off" />
+        <button class="icon-btn primary" id="send-btn">➤</button>
+      </div>
+    </div>
+
+    <!-- ========== MEMORY ========== -->
+    <div id="tab-memory" class="tab-panel">
+      <div class="section-title" data-i18n="memory_title">Memory</div>
+      <p class="muted" data-i18n="memory_desc">Long-term notes & preferences stored securely in your browser.</p>
+      <div class="memory-list" id="memory-list"></div>
+      <div class="add-memory">
+        <input type="text" id="memory-input" placeholder="Add a note..." data-i18n-placeholder="add_note" />
+        <button class="btn" id="add-memory-btn" data-i18n="add">Add</button>
+      </div>
+    </div>
+
+    <!-- ========== REPLY ========== -->
+    <div id="tab-reply" class="tab-panel">
+      <div class="section-title" data-i18n="reply_title">Smart Auto-Reply</div>
+      <p class="muted" data-i18n="reply_desc">Generate replies for WhatsApp, SMS, Email & Social DMs</p>
+
+      <div class="tone-selector" id="tone-selector">
+        <button class="tone-btn active" data-tone="all">All / सभी</button>
+        <button class="tone-btn" data-tone="friendly">Friendly</button>
+        <button class="tone-btn" data-tone="formal">Formal</button>
+        <button class="tone-btn" data-tone="strict">Strict</button>
+        <button class="tone-btn" data-tone="concise">Concise</button>
+        <button class="tone-btn" data-tone="funny">Funny</button>
+      </div>
+
+      <textarea id="reply-context" rows="3" placeholder="Paste the message you received..." data-i18n-placeholder="paste_msg"></textarea>
+
+      <button class="btn" id="generate-reply" style="width:100%; margin-bottom:16px;" data-i18n="generate">Generate Replies</button>
+
+      <div id="reply-results"></div>
+    </div>
+
+    <!-- ========== SHIELD ========== -->
+    <div id="tab-shield" class="tab-panel">
+      <div class="section-title" data-i18n="shield_title">Shield / सुरक्षा</div>
+      <p class="muted" data-i18n="shield_desc">Heuristic URL / phishing scanner + Privacy Master Switch</p>
+
+      <div class="url-input-area">
+        <input type="url" id="url-input" placeholder="https://example.com" />
+        <button class="btn" id="scan-btn" data-i18n="scan">Scan</button>
+      </div>
+
+      <div id="scan-result" class="scan-result"></div>
+
+      <div class="privacy-card">
+        <div>
+          <div style="font-weight:600" data-i18n="privacy_title">Privacy & Auto-Protection</div>
+          <div class="muted" style="font-size:0.85rem; margin-top:4px;" data-i18n="privacy_desc">Master switch for background tracking features</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="privacy-switch" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div style="margin-top:24px; background:var(--surface); border-radius:var(--radius); padding:16px; border:1px solid var(--border);">
+        <div style="font-weight:600; margin-bottom:8px;" data-i18n="what_is_url">What is a URL?</div>
+        <p class="muted" style="font-size:0.9rem; line-height:1.5;" data-i18n="url_explain">
+          A URL (Uniform Resource Locator) is the address of a webpage or resource on the internet. Always check the domain carefully before clicking links from unknown sources.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav>
+    <button class="nav-item active" data-tab="chat">
+      <span class="icon">💬</span>
+      <span data-i18n="nav_chat">Chat</span>
+    </button>
+    <button class="nav-item" data-tab="memory">
+      <span class="icon">🧠</span>
+      <span data-i18n="nav_memory">Memory</span>
+    </button>
+    <button class="nav-item" data-tab="reply">
+      <span class="icon">✉️</span>
+      <span data-i18n="nav_reply">Reply</span>
+    </button>
+    <button class="nav-item" data-tab="shield">
+      <span class="icon">🛡️</span>
+      <span data-i18n="nav_shield">Shield</span>
+    </button>
+  </nav>
+
+  <!-- Floating Bubble -->
+  <div id="float-bubble">💬</div>
+
+  <script>
+    // ===================== i18n =====================
+    const i18n = {
+      en: {
+        nav_chat: "Chat",
+        nav_memory: "Memory",
+        nav_reply: "Reply",
+        nav_shield: "Shield",
+        memory_title: "Memory",
+        memory_desc: "Long-term notes & preferences stored securely in your browser.",
+        add_note: "Add a note...",
+        add: "Add",
+        reply_title: "Smart Auto-Reply",
+        reply_desc: "Generate replies for WhatsApp, SMS, Email & Social DMs",
+        paste_msg: "Paste the message you received...",
+        generate: "Generate Replies",
+        shield_title: "Shield / सुरक्षा",
+        shield_desc: "Heuristic URL / phishing scanner + Privacy Master Switch",
+        scan: "Scan",
+        privacy_title: "Privacy & Auto-Protection",
+        privacy_desc: "Master switch for background tracking features",
+        what_is_url: "What is a URL?",
+        url_explain: "A URL (Uniform Resource Locator) is the address of a webpage or resource on the internet. Always check the domain carefully before clicking links from unknown sources.",
+        chat_placeholder: "Type a message...",
+        bot_hello: "Hello! I'm Guru – your all-in-one assistant. How can I help you today?"
+      },
+      hi: {
+        nav_chat: "चैट",
+        nav_memory: "मेमोरी",
+        nav_reply: "ऑटो-रिप्लाई",
+        nav_shield: "शील्ड",
+        memory_title: "मेमोरी",
+        memory_desc: "आपकी पसंद और महत्वपूर्ण नोट्स सुरक्षित रूप से ब्राउज़र में सहेजे जाते हैं।",
+        add_note: "नोट जोड़ें...",
+        add: "जोड़ें",
+        reply_title: "स्मार्ट ऑटो-रिप्लाई",
+        reply_desc: "WhatsApp, SMS, Email और Social DMs के लिए जवाब बनाएं",
+        paste_msg: "प्राप्त संदेश पेस्ट करें...",
+        generate: "रिप्लाई बनाएं",
+        shield_title: "शील्ड / सुरक्षा",
+        shield_desc: "URL / फिशिंग लिंक स्कैनर + प्राइवेसी मास्टर स्विच",
+        scan: "स्कैन",
+        privacy_title: "प्राइवेसी और ऑटो-प्रोटेक्शन",
+        privacy_desc: "बैकग्राउंड ट्रैकिंग फीचर्स के लिए मास्टर स्विच",
+        what_is_url: "URL क्या है?",
+        url_explain: "URL (Uniform Resource Locator) किसी वेबपेज या इंटरनेट रिसोर्स का पता होता है। अज्ञात स्रोतों से आने वाले लिंक पर क्लिक करने से पहले डोमेन ध्यान से जांचें।",
+        chat_placeholder: "संदेश लिखें...",
+        bot_hello: "नमस्ते! मैं गुरु हूँ – आपका ऑल-इन-वन सहायक। कैसे मदद कर सकता हूँ?"
+      }
+    };
+
+    let currentLang = localStorage.getItem("guru_lang") || "hi";
+    let memories = JSON.parse(localStorage.getItem("guru_memories") || "[]");
+    let privacyOn = localStorage.getItem("guru_privacy") !== "false";
+
+    // ===================== Language =====================
+    function applyLanguage() {
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (i18n[currentLang][key]) el.textContent = i18n[currentLang][key];
+      });
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+        const key = el.getAttribute("data-i18n-placeholder");
+        if (i18n[currentLang][key]) el.placeholder = i18n[currentLang][key];
+      });
+      document.getElementById("chat-input").placeholder = i18n[currentLang].chat_placeholder;
+      document.querySelectorAll(".lang-btn").forEach(b => {
+        b.classList.toggle("active", b.dataset.lang === currentLang);
+      });
+      localStorage.setItem("guru_lang", currentLang);
+    }
+
+    document.querySelectorAll(".lang-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentLang = btn.dataset.lang;
+        applyLanguage();
+      });
+    });
+
+    // ===================== Tabs =====================
+    document.querySelectorAll(".nav-item").forEach(item => {
+      item.addEventListener("click", () => {
+        document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+        item.classList.add("active");
+        document.getElementById("tab-" + item.dataset.tab).classList.add("active");
+      });
+    });
+
+    // ===================== Chat =====================
+    const chatMessages = document.getElementById("chat-messages");
+    const chatInput = document.getElementById("chat-input");
+
+    function addMessage(text, isUser = false) {
+      const div = document.createElement("div");
+      div.className = "msg " + (isUser ? "user" : "bot");
+      div.textContent = text;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Initial greeting
+    addMessage(i18n[currentLang].bot_hello);
+
+    document.getElementById("send-btn").addEventListener("click", sendChat);
+    chatInput.addEventListener("keypress", e => {
+      if (e.key === "Enter") sendChat();
+    });
+
+    function sendChat() {
+      const text = chatInput.value.trim();
+      if (!text) return;
+      addMessage(text, true);
+      chatInput.value = "";
+
+      // Demo smart replies (aap baad me real AI laga sakte ho)
+      setTimeout(() => {
+        const repliesHi = [
+          "समझ गया भाई! और बताओ।",
+          "ठीक है, मैं मदद करूंगा।",
+          "यह दिलचस्प है। थोड़ा और डिटेल दो?",
+          "मेमोरी में सेव कर दूं क्या?",
+          "ठीक है, हो गया।"
+        ];
+        const repliesEn = [
+          "Got it! Tell me more.",
+          "Sure, I can help with that.",
+          "Interesting. Any more details?",
+          "Should I save this to Memory?",
+          "Alright, done."
+        ];
+        const list = currentLang === "hi" ? repliesHi : repliesEn;
+        addMessage(list[Math.floor(Math.random() * list.length)]);
+      }, 500 + Math.random() * 400);
+    }
+
+    // Voice Input
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.onresult = (e) => {
+        chatInput.value = e.results[0][0].transcript;
+        sendChat();
+      };
+      recognition.onend = () => {
+        document.getElementById("voice-btn").textContent = "🎤";
+      };
+    }
+
+    document.getElementById("voice-btn").addEventListener("click", () => {
+      if (!recognition) {
+        alert(currentLang === "hi" ? "इस ब्राउज़र में वॉयस सपोर्ट नहीं है" : "Voice not supported in this browser");
+        return;
+      }
+      recognition.lang = currentLang === "hi" ? "hi-IN" : "en-IN";
+      recognition.start();
+      document.getElementById("voice-btn").textContent = "🔴";
+    });
+
+    // ===================== Memory =====================
+    function renderMemories() {
+      const list = document.getElementById("memory-list");
+      list.innerHTML = "";
+      if (memories.length === 0) {
+        list.innerHTML = `<p class="muted">${currentLang === "hi" ? "अभी कोई नोट नहीं है।" : "No notes yet."}</p>`;
+        return;
+      }
+      memories.forEach((m, i) => {
+        const div = document.createElement("div");
+        div.className = "memory-item";
+        div.innerHTML = `
+          <p>${escapeHtml(m)}</p>
+          <button class="btn-sm danger" data-i="${i}">✕</button>
+        `;
+        list.appendChild(div);
+      });
+      list.querySelectorAll(".btn-sm.danger").forEach(btn => {
+        btn.addEventListener("click", () => {
+          memories.splice(+btn.dataset.i, 1);
+          localStorage.setItem("guru_memories", JSON.stringify(memories));
+          renderMemories();
+        });
+      });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    document.getElementById("add-memory-btn").addEventListener("click", () => {
+      const val = document.getElementById("memory-input").value.trim();
+      if (!val) return;
+      memories.push(val);
+      localStorage.setItem("guru_memories", JSON.stringify(memories));
+      document.getElementById("memory-input").value = "";
+      renderMemories();
+    });
+
+    document.getElementById("memory-input").addEventListener("keypress", e => {
+      if (e.key === "Enter") document.getElementById("add-memory-btn").click();
+    });
+
+    // ===================== Reply Generator =====================
+    let currentTone = "all";
+    document.querySelectorAll(".tone-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tone-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentTone = btn.dataset.tone;
+      });
+    });
+
+    const replyTemplates = {
+      friendly: {
+        en: "Hey! Thanks for reaching out 😊\n\nSure, I'd be happy to help with that. Let me know if you need anything else!",
+        hi: "हे! संपर्क करने के लिए धन्यवाद 😊\n\nबिल्कुल, मैं इसमें मदद करने के लिए खुश हूँ। कुछ और चाहिए तो बताना!"
+      },
+      formal: {
+        en: "Dear Sir/Madam,\n\nThank you for your message. I will look into this matter and get back to you shortly.\n\nBest regards,",
+        hi: "आदरणीय महोदय/महोदया,\n\nआपके संदेश के लिए धन्यवाद। मैं इस मामले पर विचार कर शीघ्र आपको उत्तर दूंगा।\n\nसादर,"
+      },
+      strict: {
+        en: "Noted. Please ensure this is completed by the deadline. No further delays will be accepted.",
+        hi: "नोट किया गया। कृपया इसे निर्धारित समय सीमा तक पूरा करें। कोई और देरी स्वीकार नहीं की जाएगी।"
+      },
+      concise: {
+        en: "Got it. Will do.",
+        hi: "समझ गया। कर दूंगा।"
+      },
+      funny: {
+        en: "Haha okay okay, message received loud and clear! 🚀\nDon't worry, I've got this covered (coffee first though ☕).",
+        hi: "हाहा ठीक है ठीक है, मैसेज मिल गया! 🚀\nचिंता मत करो, मैं संभाल लूंगा (पहले कॉफी तो पी लूं ☕)।"
+      }
+    };
+
+    document.getElementById("generate-reply").addEventListener("click", () => {
+      const context = document.getElementById("reply-context").value.trim();
+      const results = document.getElementById("reply-results");
+      results.innerHTML = "";
+
+      const tones = currentTone === "all"
+        ? ["friendly", "formal", "strict", "concise", "funny"]
+        : [currentTone];
+
+      tones.forEach(tone => {
+        const box = document.createElement("div");
+        box.className = "reply-box";
+
+        let text = replyTemplates[tone][currentLang];
+        if (context) {
+          text += `\n\n(Regarding: "${context.slice(0, 70)}${context.length > 70 ? '...' : ''}")`;
+        }
+
+        box.textContent = text;
+
+        const actions = document.createElement("div");
+        actions.className = "reply-actions";
+        actions.innerHTML = `
+          <button class="btn secondary copy-btn">📋 Copy</button>
+          <button class="btn secondary speak-btn">🔊 Speak</button>
+        `;
+        box.appendChild(actions);
+        results.appendChild(box);
+
+        actions.querySelector(".copy-btn").onclick = () => {
+          navigator.clipboard.writeText(text).then(() => {
+            actions.querySelector(".copy-btn").textContent = "✓ Copied";
+            setTimeout(() => {
+              actions.querySelector(".copy-btn").textContent = "📋 Copy";
+            }, 1500);
+          });
+        };
+
+        actions.querySelector(".speak-btn").onclick = () => {
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = currentLang === "hi" ? "hi-IN" : "en-IN";
+          speechSynthesis.speak(u);
+        };
+      });
+    });
+
+    // ===================== Shield =====================
+    document.getElementById("privacy-switch").checked = privacyOn;
+    document.getElementById("privacy-switch").addEventListener("change", e => {
+      privacyOn = e.target.checked;
+      localStorage.setItem("guru_privacy", privacyOn);
+    });
+
+    document.getElementById("scan-btn").addEventListener("click", () => {
+      const url = document.getElementById("url-input").value.trim();
+      const result = document.getElementById("scan-result");
+      if (!url) return;
+
+      const lower = url.toLowerCase();
+      const riskyPatterns = [
+        "bit.ly", "tinyurl", "t.co", "goo.gl", "ow.ly",
+        "login-", "secure-", "account-verify", "paypal-", "bank-",
+        "free-gift", "urgent", "verify-now", "claim-prize",
+        "@", "xn--"
+      ];
+
+      const isRisky = riskyPatterns.some(p => lower.includes(p)) ||
+                     !url.startsWith("https://") ||
+                     url.split(".").length < 2;
+
+      result.style.display = "block";
+      result.className = "scan-result " + (isRisky ? "risky" : "safe");
+
+      if (isRisky) {
+        result.innerHTML = `
+          <div style="font-weight:600; color:var(--danger); margin-bottom:8px;">⚠️ Potentially Risky / जोखिम भरा</div>
+          <p class="muted" style="font-size:0.9rem;">
+            ${currentLang === "hi"
+              ? "यह URL संदिग्ध पैटर्न दिखा रहा है (शॉर्टनर, HTTPS नहीं, या फिशिंग जैसे शब्द)। बहुत सावधानी से आगे बढ़ें या क्लिक न करें।"
+              : "This URL shows suspicious patterns (shortener, missing HTTPS, or common phishing keywords). Proceed with extreme caution."}
+          </p>
+        `;
+      } else {
+        result.innerHTML = `
+          <div style="font-weight:600; color:var(--success); margin-bottom:8px;">✓ Looks Safe / सुरक्षित दिख रहा है</div>
+          <p class="muted" style="font-size:0.9rem;">
+            ${currentLang === "hi"
+              ? "कोई स्पष्ट रेड फ्लैग नहीं मिला। फिर भी डोमेन को हमेशा चेक करें।"
+              : "No obvious red flags detected. Still, always verify the domain matches the expected website."}
+          </p>
+        `;
+      }
+    });
+
+    // ===================== Floating Bubble (Draggable) =====================
+    const bubble = document.getElementById("float-bubble");
+    let isDragging = false;
+    let startX, startY, initialLeft, initialTop;
+
+    bubble.addEventListener("pointerdown", (e) => {
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      const rect = bubble.getBoundingClientRect();
+      initialLeft = rect.left;
+      initialTop = rect.top;
+      bubble.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+
+    bubble.addEventListener("pointermove", (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      bubble.style.left = (initialLeft + dx) + "px";
+      bubble.style.top = (initialTop + dy) + "px";
+      bubble.style.right = "auto";
+      bubble.style.bottom = "auto";
+    });
+
+    bubble.addEventListener("pointerup", () => {
+      isDragging = false;
+    });
+
+    bubble.addEventListener("click", (e) => {
+      // Only trigger if not dragged much
+      document.querySelector('[data-tab="chat"]').click();
+    });
+
+    // ===================== Init =====================
+    applyLanguage();
+    renderMemories();
+  </script>
+</body>
+</html>
